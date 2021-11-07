@@ -7,11 +7,11 @@ type User {
     _id: ID
     username: String
     email: String
-    bookcount:String
     savedBooks: [Book]
+    bookCount:String
   }
 
-  type Book {
+type Book {
     _id: ID
     authors: [String]
     description: String
@@ -21,13 +21,15 @@ type User {
     link:String
   }
 
-  type Auth {
+type Auth {
     token: ID!
     user: User
   }
 
 type Query {
   me: User
+  users: [User]
+  user(username: String!): User
 }
 
 type Mutation {
