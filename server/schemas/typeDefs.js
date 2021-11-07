@@ -40,7 +40,7 @@ type Mutation {
         bookId:String!,
         image:String!,
         link:String!): User
-    deleteBook(bookId: String!): User
+    removeBook(bookId: String!): User
   }
 `;
 
