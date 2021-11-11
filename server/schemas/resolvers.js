@@ -47,12 +47,12 @@ const resolvers = {
             return { token, user };
         },
 
-        saveBook: async (parent, bookData, context) => {
+        saveBook: async (parent, {bookData}, context) => {
             if (context.user) {
                 const updatedUser = await User.findOneAndUpdate(
                     { _id: context.user._id },
-                    { $addToSet: { savedBooks: bookData } },
-                    { new: true, runValidators: true }
+                    { $push: { savedBooks: {bookData}} },
+                    { new: true }
                 ).populate('savedBooks');
                 return updatedUser;
             }

@@ -17,7 +17,7 @@ const SearchBooks = () => {
   // create state to hold saved bookId values
   const [savedBookIds, setSavedBookIds] = useState(getSavedBookIds());
 
-  const [saveBook, { error }] = useMutation(SAVE_BOOK)
+  const [saveBook] = useMutation(SAVE_BOOK)
 
   // set up useEffect hook to save `savedBookIds` list to localStorage on component unmount
   // learn more here: https://reactjs.org/docs/hooks-effect.html#effects-with-cleanup
@@ -58,32 +58,31 @@ const SearchBooks = () => {
   };
 
   // create function to handle saving a book to our database
-  const handleSaveBook = async (bookId) => {
+  const handleSaveBook = async (thisBookId) => {
     // find the book in `searchedBooks` state by the matching id
-    const bookToSave = searchedBooks.find((book) => book.bookId === bookId);
-
-    // get token
-    // const token = Auth.loggedIn() ? Auth.getToken() : null;
-
-    // if (!token) {
-    //   return false;
-    // }
-
-    const {thisBookId,title,link,image,description,authors} = bookToSave;
-
+    const bookToSave = searchedBooks.find((book) => book.bookId === thisBookId);
+    // const { bookId, title, link, image, description, authors } = bookToSave;
+    console.log("bookToSave", bookToSave);
     try {
       // const response = await saveBook(bookToSave, token);
       await saveBook({
-        variables: { thisBookId,title,link,image,description,authors }
-    });
-      // if (!response.ok) {
-      //   throw new Error('something went wrong!');
-      // }
+        variables: {
+          bookData: {
+            bookId: bookToSave.bookId,
+            title: bookToSave.title,
+            link: bookToSave.link,
+            image: bookToSave.image,
+            description: bookToSave.description,
+            authors: bookToSave.authors
+          }
+        }
+      });
 
       // if book successfully saves to user's account, save book id to state
       setSavedBookIds([...savedBookIds, bookToSave.bookId]);
+      console.log("savedBookId",savedBookIds);
     } catch (err) {
-      console.error(err);
+      console.log("save book failed", err);
     }
   };
 
