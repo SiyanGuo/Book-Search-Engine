@@ -8,7 +8,6 @@ const resolvers = {
             if (context.user) {
                 const userData = await User.findOne({ _id: context.user._id })
                     .select('-__v -password')
-                    .populate('savedBooks')
                 return userData;
             }
             throw new AuthenticationError('Not logged in');
@@ -20,11 +19,15 @@ const resolvers = {
                 .populate('savedBooks')
         },
         // get a user by username
-        user: async (parent, { username }) => {
-            return User.findOne({ username })
-                .select('-__v -password')
-                .populate('savedBooks')
-        },
+        user: async (parent, { username }, context) => {
+            if (context.user) {
+                const userData = await User.findOne({ username })
+                    .select('-__v -password')
+                    .populate('savedBooks')
+                return userData;
+            }
+            throw new AuthenticationError('Not logged in');
+        }
     },
 
     Mutation: {
@@ -47,25 +50,25 @@ const resolvers = {
             return { token, user };
         },
 
-        saveBook: async (parent, {bookData}, context) => {
+        saveBook: async (parent, args, context) => {
             if (context.user) {
                 const updatedUser = await User.findOneAndUpdate(
                     { _id: context.user._id },
-                    { $push: { savedBooks: {bookData}} },
+                    { $push: { savedBooks: args.bookData } },
                     { new: true }
-                ).populate('savedBooks');
+                )
                 return updatedUser;
             }
             throw new AuthenticationError('You need to be logged in!');
         },
 
-        removeBook: async (parent, bookData, context) => {
+        removeBook: async (parent, args, context) => {
             if (context.user) {
                 const updatedUser = await User.findOneAndUpdate(
                     { _id: context.user._id },
-                    { $pull: { savedBooks: bookData } },
+                    { $pull: { savedBooks: { bookId: args.bookId } } },
                     { new: true }
-                ).populate('savedBooks');
+                )
                 return updatedUser;
             }
             throw new AuthenticationError('You need to be logged in!');

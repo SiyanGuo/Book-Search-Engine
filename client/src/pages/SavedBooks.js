@@ -1,25 +1,39 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Jumbotron, Container, CardColumns, Card, Button } from 'react-bootstrap';
 import { useQuery, useMutation } from '@apollo/client';
 
-import { QUERY_USER } from '../utils/queries';
+import { QUERY_ME } from '../utils/queries';
 import { REMOVE_BOOK } from '../utils/mutations';
 import Auth from '../utils/auth';
 import { removeBookId } from '../utils/localStorage';
 
 const SavedBooks = () => {
-  const [userData, setUserData] = useState({});
   const [removeBook] = useMutation(REMOVE_BOOK);
-  const myUsername = Auth.getProfile().data.username;
-  const { loading, data } = useQuery(QUERY_USER, { variables: { username: myUsername } });
+  const { loading, data } = useQuery(QUERY_ME);
+  console.log("data", data);
+
+  const userData = data?.me || {};
+  console.log("userData", userData);
 
   // use this to determine if `useEffect()` hook needs to run again
   // const userDataLength = Object.keys(userData).length;
+  // const userBookLength = data?.user.savedBooks.length;
 
-  const meData = data?.user || {};
+  // useEffect(() => {
+  //   const getUserData = async () => {
+  //     try {
+  //       const meData = await data.user;
+  //       console.log("meData", meData);
+  //       setUserData(meData)
+  //     }
+  //     catch (err) {
+  //       console.error(err);
+  //     }
+  //   };
+  //   getUserData()
+  // }, [userBookLength]);
 
-  // use this to determine if `useEffect()` hook needs to run again
-  // const userDataLength = Object.keys(userData).length;
+
   // useEffect(() => {
   //   const getUserData = async () => {
   //     try {
@@ -41,23 +55,16 @@ const SavedBooks = () => {
   // }, [userDataLength]);
 
   // create function that accepts the book's mongo _id value as param and deletes the book from the database
-  const handleDeleteBook = async (bookId) => {
+  const handleDeleteBook = async (thisBookId) => {
     try {
-      const updatedUser = await removeBook({ variables: bookId });
-      setUserData(updatedUser);
+      await removeBook({
+        variables: { bookId: thisBookId }
+      });
       // upon success, remove book's id from localStorage
-      removeBookId(bookId);
+      removeBookId(thisBookId);
     } catch (err) {
       console.error(err);
     }
-  };
-
-  // if data isn't here yet, say so
-  if (loading) {
-    return <h2>LOADING...</h2>;
-  } else {
-    setUserData(meData)
-    // return <h2>testing</h2>
   };
 
   if (!Auth.loggedIn()) {
@@ -66,6 +73,11 @@ const SavedBooks = () => {
         You need to be logged in to see this page. Use the navigation links above to sign up or log in!
       </h4>
     );
+  }
+
+  // if data isn't here yet, say so
+  if (loading) {
+    return <h2>LOADING...</h2>;
   }
 
   return (
